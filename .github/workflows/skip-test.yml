@@ -1,0 +1,39 @@
+name: Test Skip Duplicate
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch: { }
+
+jobs:
+  Job1:
+    name: Test1
+
+    permissions:
+      contents: read
+      id-token: write
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+
+      - id: doc_change
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: false
+          paths: '["doc/**"]'
+
+      - if: steps.doc_change.outputs.should_skip != 'true'
+        name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+
+      - if: steps.doc_change.outputs.should_skip != 'true'
+        name: Build Docs
+        run: |
+          cd doc
+          pwd
+          ls -la
